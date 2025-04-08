@@ -1,0 +1,34 @@
+name: CD
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup mvn
+        uses: s4u/setup-maven-action@v1.13.0
+        with:
+          java-version: "21"
+          java-distribution: "temurin"
+          maven-version: "3.9.6"
+
+      - name: Build & verify
+        run: mvn clean package verify
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_SECRET_KEY_ID}}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY}}
+          aws-region: eu-west-3
+
+      - name: Publish package to AWS CodeArtifact
+        run: export CODEARTIFACT_TOKEN=$(aws codeartifact get-authorization-token --domain maven-hei-lab --domain-owner 057045785189 --region eu-west-3 --query authorizationToken --output text) && mvn clean deploy --settings ./.m2/settings.xml

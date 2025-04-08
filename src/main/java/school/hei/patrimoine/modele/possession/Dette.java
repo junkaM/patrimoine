@@ -1,12 +1,30 @@
 package school.hei.patrimoine.modele.possession;
 
-import java.time.LocalDate;
+import static school.hei.patrimoine.modele.possession.TypeAgregat.OBLIGATION;
 
-public final class Dette extends Argent {
-  public Dette(String nom, LocalDate t, int valeurComptable) {
+import java.time.LocalDate;
+import school.hei.patrimoine.modele.Argent;
+
+public final class Dette extends Compte {
+
+  public Dette(String nom, LocalDate t, Argent valeurComptable) {
     super(nom, t, valeurComptable);
-    if (valeurComptable > 0) {
+    if (valeurComptable.gt(0)) {
       throw new IllegalArgumentException();
     }
+  }
+
+  private Dette(Compte compte) {
+    this(compte.nom, compte.t, compte.valeurComptable);
+  }
+
+  @Override
+  public Dette projectionFuture(LocalDate tFutur) {
+    return new Dette(super.projectionFuture(tFutur));
+  }
+
+  @Override
+  public TypeAgregat typeAgregat() {
+    return OBLIGATION;
   }
 }

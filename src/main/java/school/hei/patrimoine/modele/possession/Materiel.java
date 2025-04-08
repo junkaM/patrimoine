@@ -1,16 +1,21 @@
 package school.hei.patrimoine.modele.possession;
 
-import java.time.LocalDate;
-
-import static java.lang.Math.max;
 import static java.time.temporal.ChronoUnit.DAYS;
+import static school.hei.patrimoine.modele.possession.TypeAgregat.IMMOBILISATION;
+
+import java.time.LocalDate;
+import school.hei.patrimoine.modele.Argent;
 
 public final class Materiel extends Possession {
   private final LocalDate dateAcquisition;
   private final double tauxDAppreciationAnnuelle;
 
   public Materiel(
-      String nom, LocalDate t, int valeurComptable, LocalDate dateAcquisition, double tauxDAppreciationAnnuelle) {
+      String nom,
+      LocalDate dateAcquisition,
+      LocalDate t,
+      Argent valeurComptable,
+      double tauxDAppreciationAnnuelle) {
     super(nom, t, valeurComptable);
     this.dateAcquisition = dateAcquisition;
     this.tauxDAppreciationAnnuelle = tauxDAppreciationAnnuelle;
@@ -19,11 +24,26 @@ public final class Materiel extends Possession {
   @Override
   public Possession projectionFuture(LocalDate tFutur) {
     if (tFutur.isBefore(dateAcquisition)) {
-      return new Materiel(nom, tFutur, 0, dateAcquisition, tauxDAppreciationAnnuelle);
+      return new Materiel(
+          nom,
+          dateAcquisition,
+          tFutur,
+          new Argent(0, valeurComptable.devise()),
+          tauxDAppreciationAnnuelle);
     }
     var joursEcoules = DAYS.between(t, tFutur);
-    double valeurAjouteeJournaliere = valeurComptable * (tauxDAppreciationAnnuelle / 365.);
-    int valeurComptableFuture = max(0, (int) (valeurComptable + valeurAjouteeJournaliere * joursEcoules));
-    return new Materiel(nom, tFutur, valeurComptableFuture, dateAcquisition, tauxDAppreciationAnnuelle);
+    var valeurAjouteeJournaliere = valeurComptable.mult((tauxDAppreciationAnnuelle / 365.));
+    var valeurFutureUnbound = valeurComptable.add(valeurAjouteeJournaliere.mult(joursEcoules), t);
+    return new Materiel(
+        nom,
+        dateAcquisition,
+        tFutur,
+        valeurFutureUnbound.lt(0) ? new Argent(0, devise()) : valeurFutureUnbound,
+        tauxDAppreciationAnnuelle);
+  }
+
+  @Override
+  public TypeAgregat typeAgregat() {
+    return IMMOBILISATION;
   }
 }

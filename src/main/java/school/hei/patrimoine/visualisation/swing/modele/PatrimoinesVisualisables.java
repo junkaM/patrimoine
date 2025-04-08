@@ -1,17 +1,17 @@
 package school.hei.patrimoine.visualisation.swing.modele;
 
-import school.hei.patrimoine.modele.EvolutionPatrimoine;
-import school.hei.patrimoine.modele.Patrimoine;
+import static java.time.LocalDate.now;
+import static java.time.Month.OCTOBER;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Observable;
+import lombok.Getter;
+import school.hei.patrimoine.modele.Patrimoine;
+import school.hei.patrimoine.modele.evolution.EvolutionPatrimoine;
 
-import static java.time.LocalDate.now;
+public final class PatrimoinesVisualisables extends ChangingObservable {
 
-public class PatrimoinesVisualisables extends Observable {
-
-  private final List<Patrimoine> patrimoines;
+  @Getter private final List<Patrimoine> patrimoines;
   private Patrimoine patrimoineSélectionné;
   private LocalDate débutEvolution;
   private LocalDate finEvolution;
@@ -20,8 +20,8 @@ public class PatrimoinesVisualisables extends Observable {
     super();
     this.patrimoines = patrimoines;
     this.patrimoineSélectionné = patrimoines.get(0);
-    this.débutEvolution = now();
-    this.finEvolution = this.débutEvolution.plusMonths(1);
+    this.débutEvolution = now(); // patrimoineSélectionné.getT();
+    this.finEvolution = LocalDate.of(2025, OCTOBER, 31);
   }
 
   public List<String> noms() {
@@ -39,25 +39,15 @@ public class PatrimoinesVisualisables extends Observable {
   }
 
   public Patrimoine selectionne(String nom) {
-    this.patrimoineSélectionné = patrimoines.stream()
-        .filter(patrimoine -> nom.equals(patrimoine.nom()))
-        .findFirst()
-        .get();
+    this.patrimoineSélectionné =
+        patrimoines.stream().filter(patrimoine -> nom.equals(patrimoine.nom())).findFirst().get();
 
     change();
     return this.patrimoineSélectionné;
   }
 
-  private void change() {
-    setChanged();
-    notifyObservers();
-  }
-
   public EvolutionPatrimoine getEvolutionPatrimoine() {
     return new EvolutionPatrimoine(
-        patrimoineSélectionné.nom(),
-        patrimoineSélectionné,
-        débutEvolution,
-        finEvolution);
+        patrimoineSélectionné.nom(), patrimoineSélectionné, débutEvolution, finEvolution);
   }
 }
