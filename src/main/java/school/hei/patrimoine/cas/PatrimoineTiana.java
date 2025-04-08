@@ -6,7 +6,6 @@ import school.hei.patrimoine.modele.possession.Compte;
 import school.hei.patrimoine.modele.possession.Dette;
 import school.hei.patrimoine.modele.possession.FluxArgent;
 import school.hei.patrimoine.modele.possession.Materiel;
-import school.hei.patrimoine.modele.Argent;
 import school.hei.patrimoine.modele.Devise;
 
 import java.time.LocalDate;
